@@ -1,8 +1,20 @@
 import Dispatcher from './lib/Dispatcher.js';
 import React from 'react';
 
+/**
+ * @flow
+ */
 export default class Flucky {
-    constructor(dispatcher, actionCreators, stores) {
+    dispatcher: Dispatcher;
+    children: Array<Class<Flucky.ActionCreator>>;
+    stores: Object;
+    subscribers: Object;
+    methods: Object;
+    static Store: Function;
+    static Component: Function;
+    static ActionCreator: Function;
+
+    constructor(dispatcher: Dispatcher, actionCreators: Array<Class<Flucky.ActionCreator>>, stores: {[key: string] : Class<Flucky.Store>}) {
         this.children = actionCreators;
         this.stores = stores;
         this.dispatcher = dispatcher;
@@ -19,11 +31,12 @@ export default class Flucky {
 
                 if(prop.constructor && prop.call && prop.apply) {
                     this.addMethod(propName, child);
+
                 }
             }
         }
 
-        for(let storeName in  this.stores) {
+        for(let storeName in this.stores) {
             let store = this.stores[storeName];
 
             for(let methodName in this.methods) {
@@ -74,12 +87,12 @@ export default class Flucky {
         }
     }
 
-    addSubscriber(eventKey, callback) {
+    addSubscriber(eventKey: string, callback: Function) : void {
         this.dispatcher.subscribe(eventKey, callback);
         this.subscribers[eventKey][this.getTypeOf(callback)] = callback;
     }
 
-    addMethod(prop, child) {
+    addMethod(prop: string, child: Object) : void {
         if(!this.methods) {
             this.methods = {};
         }
@@ -99,7 +112,8 @@ export default class Flucky {
         this.subscribers[eventKey] = {};
     }
 
-    callMethod(name, a1, a2, a3, a4, a5, a6, a7, a8, a9, a0, aa, ab, ac, ad, ae, af) {
+    callMethod(name: string, a1: any, a2: any, a3: any, a4: any, a5: any, a6: any, a7: any, a8: any, a9: any, a0: any,
+               aa: any, ab: any, ac: any, ad: any, ae: any, af: any) : Array<any> {
         let dispatch = ((eventKey, payload) => {
             this.dispatcher.enqueue(eventKey, payload);
         }).bind(this);
@@ -121,10 +135,12 @@ export default class Flucky {
             }
 
             return returns;
+        } else {
+            return [];
         }
     }
 
-    getTypeOf(obj) {
+    getTypeOf(obj: any) : string {
         if(obj.constructor.name) {
             return obj.constructor.name;
         } else if(obj.constructor) {
@@ -135,50 +151,59 @@ export default class Flucky {
     }
 }
 
+Flucky.ActionCreator = class {
+
+};
+
+Flucky.Store = class {
+
+};
+
 Flucky.Component = class extends React.Component {
-    watchStore(type, event = null) {
-        if(event == null) {
-            this.addAllCallbacks(type);
-        } else {
+    watchStore(type: Object, event: ?(string | Function)) {
+        if(event != null) {
             this.addSpecificCallback(type, event);
+        } else {
+            this.addAllCallbacks(type);
         }
+    }
+
+    getStateFromStores() {
+        throw "This method needs to be overloaded!";
     }
 
     _getStateFromStores() {
         this.setState(this.getStateFromStores());
     }
 
-    addAllCallbacks(type) {
-        var _listener = this._getStateFromStores.bind(this);
-        var actions = this.getActions();
+    addAllCallbacks(type: Object) {
+        let _listener = this._getStateFromStores.bind(this);
+        let flucky = this.getFlucky();
 
-        for(var prop of Object.getOwnPropertyNames(type.prototype)) {
+        for(let prop of Object.getOwnPropertyNames(type.prototype)) {
             if(prop != "constructor" && prop.startsWith('on')) {
                 let eventKey = Dispatcher.getEventDoneKey(null, prop, type.name);
-                actions.dispatcher.subscribe(eventKey, _listener);
+                flucky.dispatcher.subscribe(eventKey, _listener);
             }
         }
     }
 
-    addSpecificCallback(type, prop) {
-        var _listener = this._getStateFromStores.bind(this);
-        var actions = this.getActions();
+    addSpecificCallback(type: Object, prop: (string | Function)) {
+        let _listener = this._getStateFromStores.bind(this);
+        let flucky = this.getFlucky();
+        let propName = typeof prop === 'string' ? prop : prop.name;
 
-        if(prop.call && prop.apply) {
-            prop = prop.name;
-        }
-
-        if(prop != "constructor" && prop.toString().startsWith('on')) {
-            let eventKey = Dispatcher.getEventDoneKey(null, prop, type.name);
-            actions.dispatcher.subscribe(eventKey, _listener);
+        if(propName != "constructor" && propName.startsWith('on')) {
+            let eventKey = Dispatcher.getEventDoneKey(null, propName, type.name);
+            flucky.dispatcher.subscribe(eventKey, _listener);
         }
     }
 
-    getActions() {
-        if(!(this.context.actions || this.props.actions)) {
-            throw "No actions provided for a Flucky.Component instance."
+    getFlucky() {
+        if(!(this.context.flucky || this.props.flucky)) {
+            throw "This Component instance isn't very flucky";
         } else {
-            return this.props.actions ? this.props.actions : this.context.actions;
+            return this.props.flucky ? this.props.flucky : this.context.flucky;
         }
     }
 };
