@@ -215,14 +215,16 @@ Flucky.Dispatcher = class {
     actions:{[key: string] : string};
     queue:Array<{action: string, payload: any}>;
     isBusy:boolean;
+    dispatchAsync:boolean;
 
-    constructor() {
+    constructor(dispatchAsync:boolean = false) {
         this.subscribers = {};
         this.subscriptionId = 0;
         this.idPrefix = '____dispatch____';
         this.actions = {};
         this.queue = [];
         this.isBusy = false;
+        this.dispatchAsync = dispatchAsync;
     }
 
     addAction(action:string):void {
@@ -236,7 +238,7 @@ Flucky.Dispatcher = class {
     }
 
     dispatch():void {
-        if(this.isBusy) {
+        if(this.isBusy && this.dispatchAsync) {
             throw "Can't dispatch while dispatching, use enqueue instead.";
         }
 
@@ -266,6 +268,10 @@ Flucky.Dispatcher = class {
     enqueue(action:string, payload:any):void {
         this._verify(action);
         this.queue.push({action, payload});
+
+        if(!this.dispatchAsync) {
+            this.dispatch();
+        }
     }
 
     subscribe(action:string, listener:Function, id:?string = null):string {
