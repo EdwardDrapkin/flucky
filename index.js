@@ -4,11 +4,11 @@ import React from 'react';
  * @flow
  */
 export default class Flucky {
-    dispatcher: Class<Flucky.Dispatcher>;
-    children: Array<Class<Flucky.ActionCreator>>;
-    stores: Object;
+    dispatcher: Flucky.Dispatcher;
+    children: Array<Flucky.ActionCreator>;
+    stores: {[key:string]:Flucky.Store};
     subscribers: Object;
-    methods: Object;
+    methods: {[key:string]:{[key:string]:{[key:string]:Function}}};
     static Store: Function;
     static Component: Function;
     static ActionCreator: Function;
