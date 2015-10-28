@@ -173,7 +173,9 @@ Flucky.Component = class extends React.Component {
     }
 
     _getStateFromStores() {
-        this.setState(this.getStateFromStores());
+        if(this.isMounted()) {
+            this.setState(this.getStateFromStores());
+        }
     }
 
     addAllCallbacks(type: Object) {
