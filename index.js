@@ -1,8 +1,9 @@
-import React from 'react';
-
 /**
  * @flow
  */
+
+import React from 'react';
+
 class FluckyActionCreator {
     error: Function;
     dispatch: Function;
