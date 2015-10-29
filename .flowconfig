@@ -7,4 +7,4 @@
 [libs]
 
 [options]
-suppress_comment=.*\\$\\$FLOW_IGNORE\\$\\$*
+suppress_comment= \\(.\\|\n\\)*\\$FlowIgnore
