@@ -3,7 +3,10 @@ import React from 'react';
 /**
  * @flow
  */
-class FluckyActionCreator {}
+class FluckyActionCreator {
+    error: Function;
+    dispatch: Function;
+}
 
 class FluckyStore {}
 
