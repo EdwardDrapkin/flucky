@@ -233,6 +233,7 @@ class Flucky {
                 this.dispatcher.addAction(doneKey);
 
                 this.addSubscriber('ERROR', ((a1, a2, a3, a4, a5, a6, a7, a8, a9, a0, aa, ab, ac, ad, ae, af) => {
+                    // $FlowIgnore
                     store['onError'](a1, a2, a3, a4, a5, a6, a7, a8, a9, a0, aa, ab, ac, ad, ae, af);
                     this.dispatcher.enqueue(doneKey);
                 }).bind(this));
@@ -251,6 +252,7 @@ class Flucky {
                         this.dispatcher.addAction(doneKey);
                         this.addSubscriber(eventKey,
                                            ((a1, a2, a3, a4, a5, a6, a7, a8, a9, a0, aa, ab, ac, ad, ae, af) => {
+                                               // $FlowIgnore
                                                store[expectedListenerName](a1, a2, a3, a4, a5, a6, a7, a8, a9, a0, aa, ab, ac, ad, ae, af);
                                                this.dispatcher.enqueue(doneKey);
                                            }).bind(this));
@@ -271,7 +273,8 @@ class Flucky {
                     if(store[expectedListenerName] && store[expectedListenerName].constructor && store[expectedListenerName].apply && store[expectedListenerName].call) {
                         this.addSubscriber(eventKey,
                                            ((a1, a2, a3, a4, a5, a6, a7, a8, a9, a0, aa, ab, ac, ad, ae, af) => {
-                                               _listener(a1, a2, a3, a4, a5, a6, a7, a8, a9, a0, aa, ab, ac, ad, ae, af);
+                                               // $FlowIgnore
+                                               store[expectedListenerName](a1, a2, a3, a4, a5, a6, a7, a8, a9, a0, aa, ab, ac, ad, ae, af);
                                                this.dispatcher.enqueue(doneKey);
                                            }).bind(this));
                     }
