@@ -4,14 +4,14 @@
 
 import React from 'react';
 
-class FluckyActionCreator {
+export class FluckyActionCreator {
     error: Function;
     dispatch: Function;
 }
 
-class FluckyStore {}
+export class FluckyStore {}
 
-class FluckyDispatcher {
+export class FluckyDispatcher {
     subscribers:{[key: string] : Object};
     subscriptionId:number;
     idPrefix:string;
@@ -113,7 +113,8 @@ class FluckyDispatcher {
         return (store + "_" + (type != null ? type + name : name) + "_done").toUpperCase();
     }
 }
-class FluckyComponent extends React.Component {
+
+export class FluckyComponent extends React.Component {
     subscriptions:{[key:string]:boolean};
     stores:Array<{type:Object, event:?(string|Function)}>;
 
@@ -198,6 +199,7 @@ class Flucky {
     stores:{[key:string]:FluckyStore};
     subscribers:Object;
     methods:{[key:string]:{[key:string]:{[key:string]:Function}}};
+    actionCallers:{[key:string]:Function};
     static Store:typeof FluckyStore;
     static Component:typeof FluckyComponent;
     static ActionCreator:typeof FluckyActionCreator;
@@ -212,6 +214,7 @@ class Flucky {
             'ERROR': {}
         };
         this.methods = {};
+        this.actionCallers = {};
 
         for(let child of this.children) {
             for(let propName of Object.getOwnPropertyNames(child.constructor.prototype)) {
@@ -299,9 +302,15 @@ class Flucky {
 
         if(!this.methods[prop]) {
             this.methods[prop] = {};
-            let getter = () => {
+            const getter = () => {
                 return this.callMethod.bind(this, prop);
             };
+
+            const caller = (...args) => {
+                return this.callMethod.bind(this, prop)(...args);
+            };
+
+            this.actionCallers[prop] = caller;
             Object.defineProperty(this, prop, {get: getter})
         }
 
@@ -322,9 +331,16 @@ class Flucky {
             let returns = [];
 
             for(let type in this.methods[name]) {
-                let eventKey = Flucky.Dispatcher.getEventKey(type, name);
+                const eventKey = Flucky.Dispatcher.getEventKey(type, name);
+                const _methods = this.actionCallers;
 
                 let dispatcher = {
+                    get actions() {
+                        const sealed = {};
+                        Object.assign(sealed, _methods);
+                        Object.seal(sealed);
+                        return sealed;
+                    },
                     dispatch: dispatch.bind(this, eventKey),
                     error: ((xhr = null, msg = "Please provide error messages, dumbass.", data = {}) => {
                         let errorObject = {
@@ -375,3 +391,5 @@ Flucky.Component = FluckyComponent;
 Flucky.Dispatcher = FluckyDispatcher;
 
 export default Flucky;
+
+
