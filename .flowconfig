@@ -1,10 +1,12 @@
 [ignore]
+.*_flow.*
 .*node_modules/fbjs.*
 .*babylon.*
 .*babel.*
 .*dist.*
 
 [include]
+.
 
 [libs]
 
