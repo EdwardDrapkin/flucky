@@ -36,7 +36,6 @@ class Flucky {
                 if(propName == 'constructor') {
                     continue;
                 }
-                // $FlowIgnore
                 const prop = child[propName];
 
                 if(prop.constructor && prop.call && prop.apply) {
@@ -48,13 +47,11 @@ class Flucky {
         for(const storeName in this.stores) {
             const store = this.stores[storeName];
 
-            // $FlowIgnore
             if(store.hasOwnProperty('onError') && store['onError'].constructor && store['onError'].apply && store['onError'].call) {
                 const doneKey = Flucky.Dispatcher.getEventDoneKey(null, 'onError', store.constructor.name);
                 this.dispatcher.addAction(doneKey);
 
                 this.addSubscriber('ERROR', ((a1, a2, a3, a4, a5, a6, a7, a8, a9, a0, aa, ab, ac, ad, ae, af) => {
-                    // $FlowIgnore
                     store['onError'](a1, a2, a3, a4, a5, a6, a7, a8, a9, a0, aa, ab, ac, ad, ae, af);
                     this.dispatcher.enqueue(doneKey);
                 }).bind(this));
@@ -65,7 +62,6 @@ class Flucky {
                 //they are listening for everyone's event
                 //e.g. onNotReal
 
-                // $FlowIgnore
                 if(store[expectedListenerName] && store[expectedListenerName].constructor && store[expectedListenerName].apply && store[expectedListenerName].call) {
                     for(const type in this.methods[methodName]) {
                         const eventKey = Flucky.Dispatcher.getEventKey(type, methodName);
@@ -73,7 +69,6 @@ class Flucky {
                         this.dispatcher.addAction(doneKey);
                         this.addSubscriber(eventKey,
                                            ((a1, a2, a3, a4, a5, a6, a7, a8, a9, a0, aa, ab, ac, ad, ae, af) => {
-                                               // $FlowIgnore
                                                store[expectedListenerName](a1, a2, a3, a4, a5, a6, a7, a8, a9, a0, aa, ab, ac, ad, ae, af);
                                                this.dispatcher.enqueue(doneKey);
                                            }).bind(this));
@@ -90,11 +85,9 @@ class Flucky {
 
                     this.dispatcher.addAction(doneKey);
 
-                    // $FlowIgnore
                     if(store[_expectedListener] && store[_expectedListener].constructor && store[_expectedListener].apply && store[_expectedListener].call) {
                         this.addSubscriber(eventKey,
                                            ((a1, a2, a3, a4, a5, a6, a7, a8, a9, a0, aa, ab, ac, ad, ae, af) => {
-                                               // $FlowIgnore
                                                store[_expectedListener](a1, a2, a3, a4, a5, a6, a7, a8, a9, a0, aa, ab, ac, ad, ae, af);
                                                this.dispatcher.enqueue(doneKey);
                                            }).bind(this));
