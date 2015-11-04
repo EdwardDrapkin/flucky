@@ -3,14 +3,20 @@
  */
 
 import React from 'react';
-import ReactComponent from 'react/lib/ReactComponent';
+//import ReactComponent from 'react/lib/ReactComponent';
+const ReactComponent = React.Component;
 
 export class FluckyActionCreator {
     error: Function;
     dispatch: Function;
+    actions:{
+        [key: string]: Function
+    };
 }
 
-export class FluckyStore {}
+export class FluckyStore {
+
+}
 
 export class FluckyDispatcher {
     subscribers:{[key: string] : Object};
@@ -115,12 +121,14 @@ export class FluckyDispatcher {
     }
 }
 
-export class FluckyComponent extends ReactComponent {
+export class FluckyComponent<DefaultProps, Props, State> extends ReactComponent<$Shape<{[_: $Keys<Props>]: any}>,Props, State>{
     subscriptions:{[key:string]:string};
     stores:Array<{type:Object, event:?(string|Function)}>;
+    state: State;
+    props: Props;
 
-    constructor(ctx:Object, props:Object) {
-        super(ctx, props);
+    constructor(props:Props, context:any) {
+        super(props, context);
 
         this.stores = [];
         this.subscriptions = {};
@@ -130,7 +138,7 @@ export class FluckyComponent extends ReactComponent {
         this.stores.push({type, event});
     }
 
-    componentWillMount() {
+    componentWillMount() : void {
         for(const {type, event} of this.stores) {
             if(event != null) {
                 this.addSpecificCallback(type, event);
@@ -140,7 +148,7 @@ export class FluckyComponent extends ReactComponent {
         }
     }
 
-    componentWillUnmount() {
+    componentWillUnmount() : void {
         for(const eventKey in this.subscriptions) {
             this.getFlucky().dispatcher.unsubscribe(eventKey, this.subscriptions[eventKey]);
             delete this.subscriptions[eventKey];
@@ -183,7 +191,7 @@ export class FluckyComponent extends ReactComponent {
         }
     }
 
-    getFlucky() : Flucky {
+    getFlucky() : Flucky & {[key:string]: Function} {
         if(!(this.context.flucky || this.props.flucky)) {
             throw "This Component instance isn't very flucky";
         } else {
@@ -220,7 +228,6 @@ class Flucky {
                 if(propName == 'constructor') {
                     continue;
                 }
-
                 // $FlowIgnore
                 const prop = child[propName];
 
@@ -234,7 +241,7 @@ class Flucky {
             const store = this.stores[storeName];
 
             // $FlowIgnore
-            if(store['onError'] && store['onError'].constructor && store['onError'].apply && store['onError'].call) {
+            if(store.hasOwnProperty('onError') && store['onError'].constructor && store['onError'].apply && store['onError'].call) {
                 const doneKey = Flucky.Dispatcher.getEventDoneKey(null, 'onError', store.constructor.name);
                 this.dispatcher.addAction(doneKey);
 
