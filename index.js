@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+import ReactComponent from 'react/lib/ReactComponent';
 
 export class FluckyActionCreator {
     error: Function;
@@ -16,7 +17,7 @@ export class FluckyDispatcher {
     subscriptionId:number;
     idPrefix:string;
     actions:{[key: string] : string};
-    queue:Array<{action: string, payload: any}>;
+    queue:Array<{action: string, payload: ?Object}>;
     isBusy:boolean;
     dispatchAsync:boolean;
 
@@ -64,15 +65,15 @@ export class FluckyDispatcher {
         }
     }
 
-    _dispatch(action:string, payload:any):void {
+    _dispatch(action:string, payload:?Object):void {
         this.isBusy = true;
-        for(let id in this.subscribers[action]) {
+        for(const id in this.subscribers[action]) {
             this.subscribers[action][id](payload);
         }
         this.isBusy = false;
     }
 
-    enqueue(action:string, payload:any):void {
+    enqueue(action:string, payload: ?Object = null):void {
         this._verify(action);
         this.queue.push({action, payload});
 
@@ -114,11 +115,11 @@ export class FluckyDispatcher {
     }
 }
 
-export class FluckyComponent extends React.Component {
-    subscriptions:{[key:string]:boolean};
+export class FluckyComponent extends ReactComponent {
+    subscriptions:{[key:string]:string};
     stores:Array<{type:Object, event:?(string|Function)}>;
 
-    constructor(ctx, props) {
+    constructor(ctx:Object, props:Object) {
         super(ctx, props);
 
         this.stores = [];
@@ -130,7 +131,7 @@ export class FluckyComponent extends React.Component {
     }
 
     componentWillMount() {
-        for(let {type, event} of this.stores) {
+        for(const {type, event} of this.stores) {
             if(event != null) {
                 this.addSpecificCallback(type, event);
             } else {
@@ -140,13 +141,13 @@ export class FluckyComponent extends React.Component {
     }
 
     componentWillUnmount() {
-        for(let eventKey in this.subscriptions) {
+        for(const eventKey in this.subscriptions) {
             this.getFlucky().dispatcher.unsubscribe(eventKey, this.subscriptions[eventKey]);
             delete this.subscriptions[eventKey];
         }
     }
 
-    getStateFromStores() {
+    getStateFromStores() : {[key:string]:Object}{
         throw "This method needs to be overloaded!";
     }
 
@@ -155,36 +156,34 @@ export class FluckyComponent extends React.Component {
     }
 
     addAllCallbacks(type:Object) {
-        let _listener = this._getStateFromStores.bind(this);
-        let flucky = this.getFlucky();
+        const _listener = this._getStateFromStores.bind(this);
+        const flucky = this.getFlucky();
 
-        for(let prop of Object.getOwnPropertyNames(type.prototype)) {
+        for(const prop of Object.getOwnPropertyNames(type.prototype)) {
             if(prop != "constructor" && prop.startsWith('on')) {
-                let eventKey = Flucky.Dispatcher.getEventDoneKey(null, prop, type.name);
+                const eventKey = Flucky.Dispatcher.getEventDoneKey(null, prop, type.name);
 
                 if(!this.subscriptions[eventKey]) {
-                    let subKey = flucky.dispatcher.subscribe(eventKey, _listener);
-                    this.subscriptions[eventKey] = subKey;
+                    this.subscriptions[eventKey] = flucky.dispatcher.subscribe(eventKey, _listener);
                 }
             }
         }
     }
 
     addSpecificCallback(type:Object, prop:(string | Function)) {
-        let _listener = this._getStateFromStores.bind(this);
-        let flucky = this.getFlucky();
-        let propName = typeof prop === 'string' ? prop : prop.name;
+        const _listener = this._getStateFromStores.bind(this);
+        const flucky = this.getFlucky();
+        const propName = typeof prop === 'string' ? prop : prop.name;
 
         if(propName != "constructor" && propName.startsWith('on')) {
-            let eventKey = Flucky.Dispatcher.getEventDoneKey(null, propName, type.name);
+            const eventKey = Flucky.Dispatcher.getEventDoneKey(null, propName, type.name);
             if(!this.subscriptions[eventKey]) {
-                let subKey = flucky.dispatcher.subscribe(eventKey, _listener);
-                this.subscriptions[eventKey] = subKey;
+                this.subscriptions[eventKey] = flucky.dispatcher.subscribe(eventKey, _listener);
             }
         }
     }
 
-    getFlucky() {
+    getFlucky() : Flucky {
         if(!(this.context.flucky || this.props.flucky)) {
             throw "This Component instance isn't very flucky";
         } else {
@@ -197,7 +196,7 @@ class Flucky {
     dispatcher:FluckyDispatcher;
     children:Array<FluckyActionCreator>;
     stores:{[key:string]:FluckyStore};
-    subscribers:Object;
+    subscribers:{[key:string]:Object};
     methods:{[key:string]:{[key:string]:{[key:string]:Function}}};
     actionCallers:{[key:string]:Function};
     static Store:typeof FluckyStore;
@@ -205,8 +204,8 @@ class Flucky {
     static ActionCreator:typeof FluckyActionCreator;
     static Dispatcher: typeof FluckyDispatcher;
 
-    constructor(dispatcher: Flucky.Dispatcher, actionCreators:Array<Flucky.ActionCreator>,
-                stores:{[key: string] : Flucky.Store}) {
+    constructor(dispatcher: FluckyDispatcher, actionCreators:Array<FluckyActionCreator>,
+                stores:{[key: string] : FluckyStore}) {
         this.children = actionCreators;
         this.stores = stores;
         this.dispatcher = dispatcher;
@@ -216,14 +215,14 @@ class Flucky {
         this.methods = {};
         this.actionCallers = {};
 
-        for(let child of this.children) {
-            for(let propName of Object.getOwnPropertyNames(child.constructor.prototype)) {
+        for(const child of this.children) {
+            for(const propName of Object.getOwnPropertyNames(child.constructor.prototype)) {
                 if(propName == 'constructor') {
                     continue;
                 }
 
                 // $FlowIgnore
-                let prop = child[propName];
+                const prop = child[propName];
 
                 if(prop.constructor && prop.call && prop.apply) {
                     this.addMethod(propName, child);
@@ -231,8 +230,8 @@ class Flucky {
             }
         }
 
-        for(let storeName in this.stores) {
-            let store = this.stores[storeName];
+        for(const storeName in this.stores) {
+            const store = this.stores[storeName];
 
             // $FlowIgnore
             if(store['onError'] && store['onError'].constructor && store['onError'].apply && store['onError'].call) {
@@ -246,16 +245,16 @@ class Flucky {
                 }).bind(this));
             }
 
-            for(let methodName in this.methods) {
-                let expectedListenerName = "on" + methodName.charAt(0).toUpperCase() + methodName.slice(1);
+            for(const methodName in this.methods) {
+                const expectedListenerName = "on" + methodName.charAt(0).toUpperCase() + methodName.slice(1);
                 //they are listening for everyone's event
                 //e.g. onNotReal
 
                 // $FlowIgnore
                 if(store[expectedListenerName] && store[expectedListenerName].constructor && store[expectedListenerName].apply && store[expectedListenerName].call) {
-                    for(let type in this.methods[methodName]) {
-                        let eventKey = Flucky.Dispatcher.getEventKey(type, methodName);
-                        let doneKey = Flucky.Dispatcher.getEventDoneKey(null, methodName, store.constructor.name);
+                    for(const type in this.methods[methodName]) {
+                        const eventKey = Flucky.Dispatcher.getEventKey(type, methodName);
+                        const doneKey = Flucky.Dispatcher.getEventDoneKey(null, methodName, store.constructor.name);
                         this.dispatcher.addAction(doneKey);
                         this.addSubscriber(eventKey,
                                            ((a1, a2, a3, a4, a5, a6, a7, a8, a9, a0, aa, ab, ac, ad, ae, af) => {
@@ -268,20 +267,20 @@ class Flucky {
 
                 //they are looking for a specific type
                 //e.g. onTestActionsNotReal
-                for(let type in this.methods[methodName]) {
-                    let eventKey = Flucky.Dispatcher.getEventKey(type, methodName);
-                    let doneKey = Flucky.Dispatcher.getEventDoneKey(type, methodName, store.constructor.name);
-                    let expectedListenerName = "on" + type +
+                for(const type in this.methods[methodName]) {
+                    const eventKey = Flucky.Dispatcher.getEventKey(type, methodName);
+                    const doneKey = Flucky.Dispatcher.getEventDoneKey(type, methodName, store.constructor.name);
+                    const _expectedListener = "on" + type +
                         methodName.charAt(0).toUpperCase() + methodName.slice(1);
 
                     this.dispatcher.addAction(doneKey);
 
                     // $FlowIgnore
-                    if(store[expectedListenerName] && store[expectedListenerName].constructor && store[expectedListenerName].apply && store[expectedListenerName].call) {
+                    if(store[_expectedListener] && store[_expectedListener].constructor && store[_expectedListener].apply && store[_expectedListener].call) {
                         this.addSubscriber(eventKey,
                                            ((a1, a2, a3, a4, a5, a6, a7, a8, a9, a0, aa, ab, ac, ad, ae, af) => {
                                                // $FlowIgnore
-                                               store[expectedListenerName](a1, a2, a3, a4, a5, a6, a7, a8, a9, a0, aa, ab, ac, ad, ae, af);
+                                               store[_expectedListener](a1, a2, a3, a4, a5, a6, a7, a8, a9, a0, aa, ab, ac, ad, ae, af);
                                                this.dispatcher.enqueue(doneKey);
                                            }).bind(this));
                     }
@@ -292,7 +291,7 @@ class Flucky {
 
     addSubscriber(eventKey:string, callback:Function):void {
         this.dispatcher.subscribe(eventKey, callback);
-        this.subscribers[eventKey][this.getTypeOf(callback)] = callback;
+        this.subscribers[eventKey][Flucky.getTypeOf(callback)] = callback;
     }
 
     addMethod(prop:string, child:Object):void {
@@ -306,16 +305,14 @@ class Flucky {
                 return this.callMethod.bind(this, prop);
             };
 
-            const caller = (...args) => {
+            this.actionCallers[prop] = (...args) => {
                 return this.callMethod.bind(this, prop)(...args);
             };
-
-            this.actionCallers[prop] = caller;
             Object.defineProperty(this, prop, {get: getter})
         }
 
-        let type = this.getTypeOf(child);
-        let eventKey = Flucky.Dispatcher.getEventKey(type, prop);
+        const type = Flucky.getTypeOf(child);
+        const eventKey = Flucky.Dispatcher.getEventKey(type, prop);
         this.dispatcher.addAction(eventKey);
         this.methods[prop][type] = child;
         this.subscribers[eventKey] = {};
@@ -323,18 +320,19 @@ class Flucky {
 
     callMethod(name:string, a1:any, a2:any, a3:any, a4:any, a5:any, a6:any, a7:any, a8:any, a9:any, a0:any,
                aa:any, ab:any, ac:any, ad:any, ae:any, af:any):Array<any> {
-        let dispatch = ((eventKey, payload) => {
+        const dispatch = ((eventKey, payload) => {
             this.dispatcher.enqueue(eventKey, payload);
         }).bind(this);
 
         if(this.methods[name]) {
-            let returns = [];
+            const returns = [];
 
-            for(let type in this.methods[name]) {
+            for(const type in this.methods[name]) {
                 const eventKey = Flucky.Dispatcher.getEventKey(type, name);
                 const _methods = this.actionCallers;
 
-                let dispatcher = {
+                const dispatcher = {
+                    // $FlowIgnore
                     get actions() {
                         const sealed = {};
                         Object.assign(sealed, _methods);
@@ -343,7 +341,7 @@ class Flucky {
                     },
                     dispatch: dispatch.bind(this, eventKey),
                     error: ((xhr = null, msg = "Please provide error messages, dumbass.", data = {}) => {
-                        let errorObject = {
+                        const errorObject = {
                             _DEFERRED_SUCCESS_EVENT: eventKey, //is this ever useful?
                             _ACTION_CREATOR: type,
                             _ACTION: name,
@@ -368,7 +366,7 @@ class Flucky {
         }
     }
 
-    getTypeOf(obj:any):string {
+    static getTypeOf(obj:any):string {
         if(obj.constructor.name) {
             return obj.constructor.name;
         } else if(obj.constructor) {
