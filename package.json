@@ -1,6 +1,6 @@
 {
   "name": "flucky",
-  "version": "0.0.23",
+  "version": "0.0.60",
   "description": "An implementation of flux that you'll feel lucky to use.",
   "main": "dist/index.js",
   "scripts": {
@@ -33,6 +33,7 @@
     "babel-preset-stage-0": "^6.0.15",
     "jest": "^0.1.40",
     "jest-cli": "^0.5.10",
+    "react": "^0.14.2",
     "webpack": "^1.12.2"
   },
   "dependencies": {
