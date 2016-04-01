@@ -20,6 +20,6 @@ Flucky.Component = FluckyComponent;
 
 Flucky.Dispatcher = FluckyDispatcher;
 
-export default Flucky;
+export {Flucky as default, FluckyDispatcher, FluckyComponent, FluckyStore, FluckyActionCreator};
 
 

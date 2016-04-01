@@ -1,6 +1,6 @@
 {
   "name": "flucky",
-  "version": "0.0.61",
+  "version": "0.0.64",
   "description": "An implementation of flux that you'll feel lucky to use.",
   "main": "dist/index.js",
   "scripts": {
