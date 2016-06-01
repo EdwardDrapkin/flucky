@@ -3,7 +3,7 @@
   "compact": false,
   "comments": true,
   "presets": [
-    "es2015",
+    "es2015-native-modules",
     "stage-0",
     "react"
   ],
