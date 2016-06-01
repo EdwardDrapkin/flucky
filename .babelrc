@@ -1,0 +1,22 @@
+{
+  "sourceMaps": "inline",
+  "compact": false,
+  "comments": true,
+  "presets": [
+    "es2015-native-modules",
+    "stage-0",
+    "react"
+  ],
+  "plugins": [
+    "transform-flow-strip-types",
+    [
+      "module-alias",
+      [
+        {
+          "src": "./lib",
+          "expose": "lib"
+        }
+      ]
+    ]
+  ]
+}

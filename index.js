@@ -2,24 +2,8 @@
  * @flow
  */
 
-import React from 'react';
-import FluckyStore from './lib/FluckyStore.js';
-import FluckyActionCreator from './lib/FluckyActionCreator';
-import FluckyDispatcher from './lib/FluckyDispatcher';
-import FluckyComponent from './lib/FluckyComponent';
-import Flucky from './lib/Flucky';
-
-
-
-
-Flucky.ActionCreator = FluckyActionCreator;
-
-Flucky.Store = FluckyStore;
-
-Flucky.Component = FluckyComponent;
-
-Flucky.Dispatcher = FluckyDispatcher;
-
-export {Flucky as default, FluckyDispatcher, FluckyComponent, FluckyStore, FluckyActionCreator};
-
-
+export FluckyStore from 'lib/FluckyStore.js';
+export FluckyActionCreator from 'lib/FluckyActionCreator';
+export FluckyDispatcher from 'lib/FluckyDispatcher';
+export FluckyComponent from 'lib/FluckyComponent';
+export default Flucky from 'lib/Flucky';
