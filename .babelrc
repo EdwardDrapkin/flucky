@@ -13,7 +13,7 @@
       "module-alias",
       [
         {
-          "src": "./lib",
+          "src": "./compiled",
           "expose": "lib"
         }
       ]
