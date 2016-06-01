@@ -1,4 +1,3 @@
-lib/
 node_modules/
 _flow/
 .babelrc
