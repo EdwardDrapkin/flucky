@@ -1,8 +1,8 @@
 {
   "name": "flucky",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "An implementation of flux that you'll feel lucky to use.",
-  "main": "compiled/index.js",
+  "main": "lib/index.js",
   "scripts": {
     "compile": "babel -d compiled/ lib/",
     "prepublish": "npm run-script compile"

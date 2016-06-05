@@ -8,15 +8,15 @@
     "react"
   ],
   "plugins": [
-    "transform-flow-strip-types",
-    [
-      "module-alias",
-      [
-        {
-          "src": "./compiled",
-          "expose": "lib"
-        }
+    "transform-flow-strip-types"
+  ],
+  "env": {
+    "testing": {
+      "presets": [
+        "es2015",
+        "react",
+        "stage-0"
       ]
-    ]
-  ]
+    }
+  }
 }
